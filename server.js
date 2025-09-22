@@ -45,9 +45,11 @@ io.on('connection', (socket) => {
     
     if (targetSocketId) {
       console.log(`Enviando para socket.id=${targetSocketId}`);
-      io.to(targetSocketId).emit('message', {
-        from: socket.userId, // garante que o 'from' é o userId do remetente
-        message: data.message
+      io.to(targetSocketId).emit('private-message', {
+        from: socket.userId,
+        to: data.to,
+        message: data.message,
+        image: data.image
       });
     } else {
       console.log(`Usuário ${data.to} não conectado`);
