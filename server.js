@@ -7,37 +7,60 @@ const app = express();
 app.use(cors());
 
 const server = http.createServer(app);
+// const io = new Server(server, {
+//   cors: { origin: '*' } // Conexão de qualquer origem
+// });
 const io = new Server(server, {
-  cors: { origin: '*' } // permite Angular conectar de qualquer lugar
-});
+    cors: {
+      origin: "http://localhost:4200", // Conexão apenas pela porta 4200
+      methods: ["GET", "POST"],
+      allowedHeaders: ["Content-Type"],
+      credentials: true
+    }
+  });
 
+// Map de userId -> socket.id
 const connectedUsers = {};
 
 io.on('connection', (socket) => {
-  console.log('Usuário conectado:', socket.id);
+  console.log(`Usuário conectado: socket.id=${socket.id}`);
 
-  // registra o usuário em uma sala com seu próprio ID
-  socket.on('register', (userId) => {
-    socket.userId = userId;
-    socket.join(userId);
-    console.log(`Usuário ${userId} entrou na sala`);
+  socket.onAny((event, ...args) => {
+    console.log(`Evento recebido: ${event}`, args);
   });
 
-  // envia mensagem para outro usuário
-//   socket.on('message', (data) => {
-//     // data = { to: userId, message: 'texto' }
-//     io.to(data.to).emit('message', { from: socket.userId, message: data.message });
-//   });
+  // registra o usuário e guarda no mapa
+  socket.on('register', (userId) => {
+    socket.userId = userId;
+    connectedUsers[userId] = socket.id; // salva mapeamento
+    socket.join(userId); // mantém sala por userId
+    console.log(`Usuário registrado: userId=${userId}, socket.id=${socket.id}`);
+    console.log('Usuarios conectados atualmente:', connectedUsers);
+  });
 
+  // envia mensagem privada
   socket.on('private-message', (data) => {
-    const targetSocket = connectedUsers[data.to]; // mapeamento userId → socketId
-    if (targetSocket) {
-      io.to(targetSocket).emit('message', data);
+    const targetSocketId = connectedUsers[data.to];
+    console.log(`Mensagem recebida do socket.id=${socket.id} (userId=${socket.userId}) para userId=${data.to}: "${data.message}"`);
+    
+    if (targetSocketId) {
+      console.log(`Enviando para socket.id=${targetSocketId}`);
+      io.to(targetSocketId).emit('message', {
+        from: socket.userId, // garante que o 'from' é o userId do remetente
+        message: data.message
+      });
+    } else {
+      console.log(`Usuário ${data.to} não conectado`);
     }
   });
 
   socket.on('disconnect', () => {
-    console.log('Usuário desconectou:', socket.id);
+    console.log(`Usuário desconectou: socket.id=${socket.id}, userId=${socket.userId}`);
+    // remove do mapa
+    if (socket.userId) {
+      delete connectedUsers[socket.userId];
+    }
+    console.log('Usuarios conectados atualmente:', connectedUsers);
   });
 });
 
