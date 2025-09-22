@@ -56,16 +56,6 @@ io.on('connection', (socket) => {
     }
   });
 
-  // socket.on('request-screenshot', (data) => {
-  //   const targetSocketId = connectedUsers[data.to];
-  //   if (targetSocketId) {
-  //     console.log(`Pedido de screenshot de ${socket.userId} para ${data.to}`);
-  //     // io.to(targetSocketId).emit('request-screenshot', { from: socket.userId });
-  //     io.to(data.to).emit('request-screenshot', { from: socket.userId });
-  //   } else {
-  //     console.log(`Usuário ${data.to} não conectado`);
-  //   }
-  // });
   socket.on('request-screenshot', (data) => {
     const targetSocketId = connectedUsers[data.to];
     if (targetSocketId) {
@@ -75,11 +65,6 @@ io.on('connection', (socket) => {
       console.log(`Usuário ${data.to} não conectado`);
     }
   });
-
-  // socket.on('screen-shot', ({ to, from, dataUrl }) => {
-  //   console.log(`screenshot recebido de ${from} para ${to}`);
-  //   io.to(to).emit('screen-shot', { from, dataUrl });
-  // });
 
   socket.on('screen-shot', ({ to, from, dataUrl }) => {
     console.log(`screenshot recebido de ${from} para ${to}`);
