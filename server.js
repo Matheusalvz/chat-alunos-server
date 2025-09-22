@@ -7,12 +7,9 @@ const app = express();
 app.use(cors());
 
 const server = http.createServer(app);
-// const io = new Server(server, {
-//   cors: { origin: '*' } // Conexão de qualquer origem
-// });
 const io = new Server(server, {
     cors: {
-      origin: "http://localhost:4200", // Conexão apenas pela porta 4200
+      origin: { origin: '*' },
       methods: ["GET", "POST"],
       allowedHeaders: ["Content-Type"],
       credentials: true
