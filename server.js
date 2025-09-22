@@ -56,6 +56,17 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('request-screenshot', (data) => {
+    const targetSocketId = connectedUsers[data.to];
+    if (targetSocketId) {
+      console.log(`Pedido de screenshot de ${socket.userId} para ${data.to}`);
+      // io.to(targetSocketId).emit('request-screenshot', { from: socket.userId });
+      io.to(data.to).emit('request-screenshot', { from: socket.userId });
+    } else {
+      console.log(`Usuário ${data.to} não conectado`);
+    }
+  });
+
   socket.on('disconnect', () => {
     console.log(`Usuário desconectou: socket.id=${socket.id}, userId=${socket.userId}`);
     // remove do mapa
